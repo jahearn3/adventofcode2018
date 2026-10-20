@@ -12,6 +12,8 @@ data = ld.load_data(f"input{day}.txt")
 n_players = int(data[0].split()[0])
 last_marble_pts = int(data[0].split()[6])
 
+last_marble_pts *= 100  # Part 2: multiply the last marble points by 100
+
 scores = {}
 circle = [0]
 current_player = 1
