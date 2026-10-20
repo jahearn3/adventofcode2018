@@ -7,7 +7,7 @@ f = os.path.basename(__file__)
 day = f[3:5]
 
 data = ld.load_data(f"example{day}.txt")
-# data = ld.load_data(f"input{day}.txt")
+data = ld.load_data(f"input{day}.txt")
 
 n_players = int(data[0].split()[0])
 last_marble_pts = int(data[0].split()[6])
@@ -35,15 +35,14 @@ for i in range(1, last_marble_pts + 1):
         scores[current_player] += i
         # print(f"Player {current_player} get {i} points")
         # Find marble 7 spaces ccw
-        bonus_marble = circle[current_marble_idx - 7]
+        remove_idx = (current_marble_idx - 7) % len(circle)
+        bonus_marble = circle.pop(remove_idx)
         # Add it to their score
         scores[current_player] += bonus_marble
         # print(f"Player {current_player} get {bonus_marble} points")
         # Remove it from circle
-        circle.remove(bonus_marble)
-        # New current marble - does it matter?
-        current_marble = circle[current_marble_idx - 7]
-        current_marble_idx = current_marble_idx - 7
+        current_marble_idx = remove_idx % len(circle)
+        current_marble = circle[current_marble_idx]
     # print(current_player, circle, current_marble, current_marble_idx)
     current_player += 1
     if current_player > n_players:
@@ -55,5 +54,3 @@ for k, v in scores.items():
         hi = v
 
 print(hi)
-# print(scores)
-# 419950 too high
