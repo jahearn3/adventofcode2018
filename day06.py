@@ -63,3 +63,17 @@ for k, v in areas.items():
         largest_area = v
 
 print(largest_area)
+
+# Part 2
+threshold = 10000
+region = 0
+
+for i in range(-margin, max_x + margin):
+    for j in range(-margin, max_y + margin):
+        total_distance = 0
+        for (x, y) in pairs:
+            total_distance += abs(x - i) + abs(y - j)
+        if total_distance < threshold:
+            region += 1
+
+print(region)
