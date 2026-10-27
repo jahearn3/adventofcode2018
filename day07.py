@@ -7,41 +7,34 @@ f = os.path.basename(__file__)
 day = f[3:5]
 
 data = ld.load_data(f"example{day}.txt")
-# data = ld.load_data(f"input{day}.txt")
+data = ld.load_data(f"input{day}.txt")
 
-steps_forward = {}
-steps_backward = {}
-
-# graph?
+prerequisites = {}
 
 for line in data:
     words = line.split()
     prerequisite = words[1]
     step = words[7]
-    if step not in steps_backward:
-        steps_backward[step] = []
-    steps_backward[step].append(prerequisite)
-    if prerequisite not in steps_forward:
-        steps_forward[prerequisite] = []
-    steps_forward[prerequisite].append(step)
 
-print(steps_forward)
-print(steps_backward)
+    prerequisites.setdefault(prerequisite, set())
+    prerequisites.setdefault(step, set())
+    prerequisites[step].add(prerequisite)
 
-stack = []
-for k, v in steps_forward.items():
-    if k not in steps_backward.keys():
-        stack.append(k)
+remaining = set(prerequisites)
+completed = set()
+order = []
 
-print(stack)
-ans = ''
-while stack:
-    current = sorted(stack)
-    stack = []
-    for item in current:
-        if item in steps_forward:
-            vv = steps_forward[item]
-            for v in vv:
-                stack.append(v)
-        ans += item
-print(ans)
+while remaining:
+    available = [
+        step for step in remaining
+        if prerequisites[step].issubset(completed)
+    ]
+
+    if not available:
+        raise ValueError("No available step: dependencies contain a cycle")
+    step = min(available)
+    remaining.remove(step)
+    completed.add(step)
+    order.append(step)
+
+print("".join(order))
