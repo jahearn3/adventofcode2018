@@ -7,20 +7,23 @@ f = os.path.basename(__file__)
 day = f[3:5]
 
 data = ld.load_data(f"example{day}.txt")
-# data = ld.load_data(f"input{day}.txt")
+data = ld.load_data(f"input{day}.txt")
 
-lst = list(map(int, data[0].split(' ')))
-print(lst)
-n_child_nodes = lst[0]
-n_metadata_entries = lst[1]
-root = {
-    'header': [n_child_nodes, n_metadata_entries],
-    'child_nodes': [],
-    'metadata_entries': []
-    }
+numbers = list(map(int, data[0].split(' ')))
 
-ans = 0
-for i in range(2, len(lst)):
-    n = int(lst[i])
 
-print(ans)
+def parse_node(index):
+    child_count, metadata_count = numbers[index:index + 2]
+    index += 2
+
+    metadata_sum = 0
+    for _ in range(child_count):
+        index, child_sum = parse_node(index)
+        metadata_sum += child_sum
+
+    metadata_sum += sum(numbers[index:index + metadata_count])
+    return index + metadata_count, metadata_sum
+
+
+end, answer = parse_node(0)
+print(answer)
