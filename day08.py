@@ -27,3 +27,33 @@ def parse_node(index):
 
 end, answer = parse_node(0)
 print(answer)
+
+# Part 2
+
+
+def parse_node_2(index):
+    child_count, metadata_count = numbers[index:index + 2]
+    index += 2
+
+    metadata_sum = 0
+    child_values = []
+
+    for _ in range(child_count):
+        index, child_sum, child_value = parse_node_2(index)
+        metadata_sum += child_sum
+        child_values.append(child_value)
+
+    metadata = numbers[index:index + metadata_count]
+    metadata_sum += sum(metadata)
+
+    if child_count == 0:
+        value = sum(metadata)
+    else:
+        value = sum(child_values[entry - 1] for entry in metadata
+                    if 1 <= entry <= len(child_values))
+
+    return index + metadata_count, metadata_sum, value
+
+
+end, metadata_sum, value = parse_node_2(0)
+print(value)
