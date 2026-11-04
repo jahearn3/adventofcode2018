@@ -2,6 +2,7 @@
 
 import load_data as ld
 import os
+from collections import deque
 
 f = os.path.basename(__file__)
 day = f[3:5]
@@ -11,8 +12,6 @@ data = ld.load_data(f"input{day}.txt")
 
 n_players = int(data[0].split()[0])
 last_marble_pts = int(data[0].split()[6])
-
-last_marble_pts *= 100  # Part 2: multiply the last marble points by 100
 
 scores = {}
 circle = [0]
@@ -56,3 +55,20 @@ for k, v in scores.items():
         hi = v
 
 print(hi)
+
+# Part 2
+last_marble_pts *= 100  # multiply the last marble points by 100
+circle = deque([0])
+scores = [0] * n_players
+
+for marble in range(1, last_marble_pts + 1):
+    if marble % 23 != 0:
+        circle.rotate(-1)
+        circle.append(marble)
+    else:
+        circle.rotate(7)
+        player = (marble - 1) % n_players
+        scores[player] += marble + circle.pop()
+        circle.rotate(-1)
+
+print(max(scores))
