@@ -3,7 +3,6 @@
 import load_data as ld
 import os
 import re
-from collections import Counter
 
 f = os.path.basename(__file__)
 day = f[3:5]
@@ -19,7 +18,7 @@ for line in data:
     lights.append([positions[0], positions[1], velocities[0], velocities[1]])
 
 
-def print_message(lights):
+def get_bounding_box(lights):
     min_x, max_x, min_y, max_y = None, None, None, None
     for light in lights:
         x, y = light[0], light[1]
@@ -31,14 +30,17 @@ def print_message(lights):
             min_y = y
         if max_y is None or y > max_y:
             max_y = y
-    # print(min_x, max_x, min_y, max_y)
+    return min_x, max_x, min_y, max_y
+
+
+def print_message(lights, output_file=None):
+    min_x, max_x, min_y, max_y = get_bounding_box(lights)
     x_shifted = []
     y_shifted = []
     for light in lights:
         x, y = light[0], light[1]
         x_shifted.append(x - min_x)
         y_shifted.append(y - min_y)
-    # print(x_shifted, y_shifted)
     message = []
     for j in range(1 + max_y - min_y):
         row = ''
@@ -49,24 +51,34 @@ def print_message(lights):
                     char = '#'
             row += char
         message.append(row)
-    for row in message:
-        print(row)
+
+    if output_file:
+        with open(output_file, 'w') as f:
+            for row in message:
+                f.write(row + '\n')
+        print(f'Message written to {output_file}')
+    else:
+        for row in message:
+            print(row)
 
 
 t = 0
-keep_going = True
-while keep_going:
-    # Check for vertically connected lights
-    x_positions = []
-    for light in lights:
-        x_positions.append(light[0])
-    counter = Counter(x_positions)
-    most_common_value, count = counter.most_common(1)[0]
-    # print(most_common_value, count)
-    if count >= 8:
-        print('Message at t =', t)
-        print_message(lights)
-        keep_going = False
+min_area = float('inf')
+best_t = 0
+best_lights = lights[:]
+
+# Find when the bounding box area is minimal
+for iteration in range(20000):  # Reasonable upper bound
+    min_x, max_x, min_y, max_y = get_bounding_box(lights)
+    area = (max_x - min_x) * (max_y - min_y)
+
+    if area < min_area:
+        min_area = area
+        best_t = t
+        best_lights = [light[:] for light in lights]
+
+    if area > min_area + 1000:  # Stop if area grows significantly
+        break
 
     # Increase time
     t += 1
@@ -77,3 +89,7 @@ while keep_going:
         light = [x + vx, y + vy, vx, vy]
         new_lights.append(light)
     lights = new_lights
+
+print(f'Message at t = {best_t}')
+print(f'Bounding box area: {min_area}')
+print_message(best_lights, output_file='data/day10_output.txt')
