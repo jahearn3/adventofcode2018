@@ -6,8 +6,8 @@ import os
 f = os.path.basename(__file__)
 day = f[3:5]
 
-data = ld.load_data(f"example{day}.txt")
-# data = ld.load_data(f"input{day}.txt")
+data = [list(row) for row in ld.load_data(f"example{day}.txt")]
+data = [list(row) for row in ld.load_data(f"input{day}.txt")]
 
 carts = []
 
@@ -18,10 +18,15 @@ for i, row in enumerate(data):
                 'position': [j, i],
                 'orientation': char,
                 'n_turns': 0})
+            if char in ['v', '^']:
+                data[i][j] = '|'
+            elif char in ['<', '>']:
+                data[i][j] = '-'
 
 t = 0
 collision = False
 while not collision:
+    carts.sort(key=lambda cart: (cart['position'][1], cart['position'][0]))
     for cart in carts:
         next_track = None
         x, y = cart['position']
@@ -40,7 +45,79 @@ while not collision:
 
         # Update positions
         # 1. No turns
-
+        if cart['orientation'] == '>' and next_track == '-':
+            cart['position'] = [x+1, y]
+        elif cart['orientation'] == '<' and next_track == '-':
+            cart['position'] = [x-1, y]
+        elif cart['orientation'] == '^' and next_track == '|':
+            cart['position'] = [x, y-1]
+        elif cart['orientation'] == 'v' and next_track == '|':
+            cart['position'] = [x, y+1]
         # 2. Turns without options
-
+        elif cart['orientation'] == '>' and next_track == '/':
+            cart['position'] = [x+1, y]
+            cart['orientation'] = '^'
+        elif cart['orientation'] == '>' and next_track == '\\':
+            cart['position'] = [x+1, y]
+            cart['orientation'] = 'v'
+        elif cart['orientation'] == '<' and next_track == '/':
+            cart['position'] = [x-1, y]
+            cart['orientation'] = 'v'
+        elif cart['orientation'] == '<' and next_track == '\\':
+            cart['position'] = [x-1, y]
+            cart['orientation'] = '^'
+        elif cart['orientation'] == '^' and next_track == '/':
+            cart['position'] = [x, y-1]
+            cart['orientation'] = '>'
+        elif cart['orientation'] == '^' and next_track == '\\':
+            cart['position'] = [x, y-1]
+            cart['orientation'] = '<'
+        elif cart['orientation'] == 'v' and next_track == '/':
+            cart['position'] = [x, y+1]
+            cart['orientation'] = '<'
+        elif cart['orientation'] == 'v' and next_track == '\\':
+            cart['position'] = [x, y+1]
+            cart['orientation'] = '>'
         # 3. Turns with options
+        elif cart['orientation'] == '>' and next_track == '+':
+            cart['position'] = [x+1, y]
+            if cart['n_turns'] % 3 == 0:
+                cart['orientation'] = '^'
+            elif cart['n_turns'] % 3 == 2:
+                cart['orientation'] = 'v'
+            cart['n_turns'] += 1
+        elif cart['orientation'] == '<' and next_track == '+':
+            cart['position'] = [x-1, y]
+            if cart['n_turns'] % 3 == 0:
+                cart['orientation'] = 'v'
+            elif cart['n_turns'] % 3 == 2:
+                cart['orientation'] = '^'
+            cart['n_turns'] += 1
+        elif cart['orientation'] == '^' and next_track == '+':
+            cart['position'] = [x, y-1]
+            if cart['n_turns'] % 3 == 0:
+                cart['orientation'] = '<'
+            elif cart['n_turns'] % 3 == 2:
+                cart['orientation'] = '>'
+            cart['n_turns'] += 1
+        elif cart['orientation'] == 'v' and next_track == '+':
+            cart['position'] = [x, y+1]
+            if cart['n_turns'] % 3 == 0:
+                cart['orientation'] = '>'
+            elif cart['n_turns'] % 3 == 2:
+                cart['orientation'] = '<'
+            cart['n_turns'] += 1
+        else:
+            print('Unknown error:')
+            print('cart', cart)
+            print('next track', next_track)
+            collision = True
+            break
+        for other in carts:
+            if other is not cart and other['position'] == cart['position']:
+                print('Collision detected at', cart['position'])
+                collision = True
+                break
+        if collision:
+            break
+    t += 1
